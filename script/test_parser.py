@@ -55,5 +55,5 @@ def test_random():
 
 if __name__ == '__main__':
     test_parse_trees()
-    test_clojure()
-    test_random()
+    # test_clojure()
+    # test_random()

@@ -81,8 +81,23 @@ class Regex:
         self.pattern = re.compile(pattern_str)
 
     def parse(self, string, pos):
+        print('Regex parser happening:', string, pos)
+        print(self.pattern_str)
+
         if match := self.pattern.match(string, pos):
+
+            print("here is the matching string:", match.group(0))
+
             return Node(pos, match.end(), name = self.name, text = match.group(0))
+
+# r1 = Regex(r'#?"', name=".open")
+# assert r1.name == ".open", "parser.name is wrong"
+# assert r1.parse('zzzzzzz', 0) is None, "Regex.parse test 1"
+# print(r1.parse('"ttt"', 0))
+
+# r2 = Regex(r"^aaa", name=".banana")
+# assert r2.name == ".banana"
+# assert r2.parse("zzzzzzzz", 0) is None
 
 class String:
     """
@@ -107,6 +122,15 @@ class Char:
         self.name = name
 
     def parse(self, string, pos):
+
+        # print('Char parse:')
+        # print(string)
+        # print(pos)
+        # print(len(string))
+        # print(string[pos])
+        # print(self.char)
+        # print("********************")
+
         if pos < len(string) and string[pos] == self.char:
             return Node(pos, pos + 1, name = self.name, text = self.char)
 
@@ -146,10 +170,20 @@ class Seq:
     def parse(self, string, pos):
         if not self.parsers:
             self.parsers = [get_parser(n) for n in self.parser_names]
+
+
+        # print('Seq parser:')
+        # print(string)
+        # print(pos)
+
         children = []
         end = pos
         for parser in self.parsers:
             if node := parser.parse(string, end):
+
+                # print('Here is a node we found:')
+                # print(node)
+
                 append_children(children, node)
                 end = node.end
             else:
@@ -189,6 +223,12 @@ class Repeat:
     Parser that matches child parser zero or more times
     """
     def __init__(self, parser_name, name = None):
+
+
+        # print("dddd:")
+        # print(parser_name)
+        # print(name)
+
         self.parser_name = parser_name
         self.parser = None
         self.name = name
@@ -241,11 +281,21 @@ parsers['wrap'] = Seq(Regex(r"(@|'|`|~@|~|#')", name = ".marker"),
                       name = "wrap")
 
 token = '[^' + r'()\[\]{}\"@~^;`#\'' + ws + '][^' + r'()\[\]{}\"@^;`' + ws + ']*'
+
+
+r3 = Regex(r'(##)?(\\[()\[\]{}\"@^;`]|' + token + ")", name = ".apple")
+assert r3.name == ".apple"
+assert r3.parse(":smile", 0) is None, "uuuuuuuuuuuuuu"
+
+
+
 parsers['token'] = Regex(r'(##)?(\\[()\[\]{}\"@^;`]|' + token + ")", name = "token")
 
 parsers['string'] = Seq(Regex(r'#?"', name=".open"),
-                        Optional(Regex(r'([^"\\]+|\\.)+', name = ".body")),
-                        Optional(Char('"', name = ".close")),
+                        # Optional(Regex(r'([^"\\]+|\\.)+', name = ".body")),
+                        Regex(r'([^"\\]+|\\.)+', name = ".body"),
+                        # Optional(Char('"', name = ".close")),
+                        Char('"', name = ".close"),
                         name = "string")
 
 parsers['brackets'] = Seq(Char("[", name = ".open"),
@@ -276,7 +326,7 @@ parsers['_form'] = Choice('token',
                           'brackets',
                           'braces',
                           'wrap',
-                          'meta',                              
+                          'meta',
                           'tagged')
 
 # top-level parser
@@ -286,6 +336,13 @@ def parse(string):
     """
     The main function that parses string and returns AST
     """
+
+    # print("33333333333333333")
+    # print(string)
+    # print("77777777777777777")
+
+    # return get_parser('string').parse('"hello there"', 0)
+    # return get_parser('token').parse(string, 0)
     return get_parser('source').parse(string, 0)
 
 def is_symbol(node):
