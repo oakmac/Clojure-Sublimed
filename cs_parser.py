@@ -81,14 +81,32 @@ class Regex:
         self.pattern = re.compile(pattern_str)
 
     def parse(self, string, pos):
-        print('Regex parser happening:', string, pos)
-        print(self.pattern_str)
+        # print('Regex parser happening:', string, pos)
+        # print(self.pattern_str)
 
         if match := self.pattern.match(string, pos):
 
-            print("here is the matching string:", match.group(0))
+            # print("here is the matching string:", match.group(0))
 
             return Node(pos, match.end(), name = self.name, text = match.group(0))
+
+
+
+
+re_test_1 = Regex(r'(c|d)+', name = '.foo')
+
+re_result_1 = re_test_1.parse('aaacb', 0) # None
+re_result_2 = re_test_1.parse('aaacb', 3) # (.foo 3..4 'c')
+re_result_3 = re_test_1.parse('aaacddb', 3) # (.foo 3..6 'cdd')
+re_result_4 = re_test_1.parse('aaacddb', 4) # (.foo 4..6 'dd')
+
+print(re_result_4)
+print('bbbbbbbbbbbbbbb')
+
+
+
+
+
 
 # r1 = Regex(r'#?"', name=".open")
 # assert r1.name == ".open", "parser.name is wrong"
@@ -283,9 +301,10 @@ parsers['wrap'] = Seq(Regex(r"(@|'|`|~@|~|#')", name = ".marker"),
 token = '[^' + r'()\[\]{}\"@~^;`#\'' + ws + '][^' + r'()\[\]{}\"@^;`' + ws + ']*'
 
 
-r3 = Regex(r'(##)?(\\[()\[\]{}\"@^;`]|' + token + ")", name = ".apple")
-assert r3.name == ".apple"
-assert r3.parse(":smile", 0) is None, "uuuuuuuuuuuuuu"
+# r3 = Regex(r'(##)?(\\[()\[\]{}\"@^;`]|' + token + ")", name = ".apple")
+# r3_result = r3.parse(':smile', 0)
+# assert r3.name == ".apple"
+# assert r3_result == ''
 
 
 
@@ -331,6 +350,49 @@ parsers['_form'] = Choice('token',
 
 # top-level parser
 parsers['source'] = Repeat(Choice('_gap', '_form', AnyChar(name = "error")), name = "source")
+
+
+
+
+
+
+test_repeat_1 = Repeat(Char('a', name = 'AAA'), name = 'repeat_test_1')
+
+repeat_result_1 = test_repeat_1.parse('b', 0)
+# print(repeat_result_1)
+
+repeat_result_2 = test_repeat_1.parse('a', 0)
+# print(repeat_result_2)
+
+repeat_result_3 = test_repeat_1.parse('aa', 0)
+
+repeat_result_4 = test_repeat_1.parse('baac', 1)
+# print(repeat_result_4)
+# print('aaaaaaaaaaaaa')
+
+# test_repeat_1 = Repeat(Seq(Char('a', name = 'AAA'),
+#                            Regex(r"(c|d)+", name = "a bunch of Cs or Ds"),
+#                            Optional(Char('z', name = 'ZZZ'))
+#                       ),
+#                        name = 'repeat_test_1')
+
+# repeat_result_1 = test_repeat_1.parse('a', 0)
+# print(repeat_result_1)
+# print('aaaaaaaaaaaaa')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def parse(string):
     """
